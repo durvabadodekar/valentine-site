@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Will You Be My Valentine?</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+      position: relative;
+      background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 182, 193, 0.25);
+      backdrop-filter: blur(2px);
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255,255,255,0.9);
+      padding: 50px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      width: 420px;
+      z-index: 2;
+    }
+
+    h1 {
+      color: #ff4d6d;
+      margin-bottom: 40px;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 15px 35px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    #yesBtn {
+      background-color: #ff4d6d;
+      color: white;
+      margin-right: 20px;
+      box-shadow: 0 6px 20px rgba(255, 77, 109, 0.6);
+      animation: pulse 1.6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    #noBtn {
+      background-color: #eee;
+      position: fixed;
+      top: 60%;
+      left: 60%;
+      z-index: 999;
+      transition: left 0.45s cubic-bezier(0.17, 0.67, 0.3, 1.33),
+                  top 0.45s cubic-bezier(0.17, 0.67, 0.3, 1.33);
+    }
+
+    .message {
+      margin-top: 30px;
+      font-size: 26px;
+      color: #ff4d6d;
+      display: none;
+    }
+
+    .heart, .petal, .sparkle {
+      z-index: 1;
+      position: fixed;
+    }
+
+    .heart {
+      bottom: -20px;
+      color: pink;
+      animation: floatUp linear infinite;
+    }
+
+    @keyframes floatUp {
+      to {
+        transform: translateY(-110vh);
+        opacity: 0;
+      }
+    }
+
+    .petal {
+      top: -10px;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0.7;
+      }
+    }
+
+    .sparkle {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 10px white;
+      animation: twinkle 1.5s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from { opacity: 0.2; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1.4); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="fireworks"></canvas>
+
+<div class="container">
+  <h1>Will you be my Valentine? ❤️</h1>
+  <button id="yesBtn">YES 💖</button>
+  <div class="message" id="message">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️ my baby, my love, my cutieeeeee! ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+</div>
+
+<button id="noBtn">NO</button>
+
+<script>
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const message = document.getElementById("message");
+
+function moveButton() {
+  const maxX = window.innerWidth - noBtn.offsetWidth;
+  const maxY = window.innerHeight - noBtn.offsetHeight;
+
+  noBtn.style.left = Math.random() * maxX + "px";
+  noBtn.style.top = Math.random() * maxY + "px";
+}
+
+document.addEventListener("mousemove", (e) => {
+  const rect = noBtn.getBoundingClientRect();
+  const distance = Math.hypot(
+    e.clientX - (rect.left + rect.width / 2),
+    e.clientY - (rect.top + rect.height / 2)
+  );
+
+  if (distance < 220) moveButton();
+});
+
+noBtn.addEventListener("touchstart", moveButton);
+moveButton();
+
+/* FIREWORKS */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+function createFirework(x, y) {
+  const particles = [];
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x,
+      y,
+      angle: Math.random() * Math.PI * 2,
+      speed: Math.random() * 6 + 2,
+      radius: 2 + Math.random() * 2,
+      alpha: 1
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      p.x += Math.cos(p.angle) * p.speed;
+      p.y += Math.sin(p.angle) * p.speed;
+      p.alpha -= 0.015;
+
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `hsl(${Math.random()*360},100%,70%)`;
+      ctx.fill();
+    });
+
+    ctx.globalAlpha = 1;
+
+    if (particles.some(p => p.alpha > 0)) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  animate();
+}
+
+yesBtn.addEventListener("click", () => {
+  message.style.display = "block";
+  yesBtn.style.display = "none";
+  noBtn.style.display = "none";
+
+  // multiple fireworks
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      createFirework(
+        Math.random() * canvas.width,
+        Math.random() * canvas.height / 2
+      );
+    }, i * 400);
+  }
+});
+
+/* Hearts */
+setInterval(() => {
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.innerHTML = "💖";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.animationDuration = (4 + Math.random() * 4) + "s";
+  heart.style.fontSize = (16 + Math.random() * 20) + "px";
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 8000);
+}, 400);
+
+/* Petals */
+setInterval(() => {
+  const petal = document.createElement("div");
+  petal.className = "petal";
+  petal.innerHTML = "🌸";
+  petal.style.left = Math.random() * 100 + "vw";
+  petal.style.animationDuration = (6 + Math.random() * 5) + "s";
+  petal.style.fontSize = (14 + Math.random() * 10) + "px";
+  document.body.appendChild(petal);
+  setTimeout(() => petal.remove(), 11000);
+}, 500);
+
+/* Sparkles */
+setInterval(() => {
+  const sparkle = document.createElement("div");
+  sparkle.className = "sparkle";
+  sparkle.style.left = Math.random() * 100 + "vw";
+  sparkle.style.top = Math.random() * 100 + "vh";
+  document.body.appendChild(sparkle);
+  setTimeout(() => sparkle.remove(), 2000);
+}, 200);
+
+</script>
+</body>
+</html>
